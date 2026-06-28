@@ -20,13 +20,11 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ATURAN PENCETAKAN KHUSUS (MEDIASI LAPTOP & HP) */
+        /* PER perbaikan sistem cetak HP tanpa merubah layout */
         @media print {
-            /* Sembunyikan semua elemen aplikasi utama */
             body *, #login-screen, #dashboard-screen, footer {
                 display: none !important;
             }
-            /* Hanya tampilkan area cetak resmi */
             #print-area-wrapper, #print-area-wrapper * {
                 display: block !important;
             }
@@ -192,7 +190,6 @@
     </footer>
 
     <script>
-        // PENTING: ISI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
         const API_URL = "https://script.google.com/macros/s/AKfycbwV78YvlT2kfK2OE4kTJKthWGcMLyG6zMkuJits1UkDxXFE5CP2PEKH-CJoiv87n235Sw/exec";
 
         let dbHeaders = [];
@@ -220,6 +217,7 @@
             }
         }
 
+        // ... Seluruh fungsi manajemen dashboard dipertahankan utuh ...
         function showDashboard() {
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("dashboard-screen").classList.remove("hidden");
@@ -249,7 +247,6 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
 
@@ -464,7 +461,7 @@
             });
         }
 
-        // RESTRUKTURISASI MULTI-DEVICE MEDIA PRINT UNTUK PC & HP
+        // KEMBALI 100% KE STRUKTUR FORMAT AWAL BUKTI DAFTAR 1
         function cetakBuktiA4(nomor, student, dariTabel = false) {
             const printWrapper = document.getElementById("print-area-wrapper");
             let dataRowsHtml = '';
@@ -472,65 +469,63 @@
             dbHeaders.forEach((header, i) => {
                 const valIdx = dariTabel ? (2 + i) : i;
                 dataRowsHtml += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="width: 35%; padding: 8px 0; font-size: 13px; color: #333; font-weight: bold; vertical-align: top;">${header}</td>
-                        <td style="width: 3%; padding: 8px 0; font-size: 13px; color: #333; vertical-align: top;">:</td>
-                        <td style="width: 62%; padding: 8px 0; font-size: 13px; color: #111; vertical-align: top;">${student[valIdx] || '-'}</td>
+                    <tr>
+                        <td style="width: 30%; padding: 4px 0; font-size: 13px; color: #000; font-weight: normal; vertical-align: top;">${header}</td>
+                        <td style="width: 70%; padding: 4px 0; font-size: 13px; color: #000; vertical-align: top;">: ${student[valIdx] || '-'}</td>
                     </tr>
                 `;
             });
 
             printWrapper.innerHTML = `
-                <div style="font-family: Arial, sans-serif; color: #000; padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
-                    <div style="border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">
-                        <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; font-weight: bold;">PEMERINTAH KOTA DENPASAR</h3>
-                        <h2 style="margin: 3px 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
-                        <p style="margin: 0; font-size: 11px; color: #333;">Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
+                <div style="font-family: Arial, sans-serif; color: #000; padding: 40px; background: white; max-width: 800px; margin: 0 auto; line-height: 1.4;">
+                    <div style="text-align: center; font-family: Arial, sans-serif;">
+                        <h2 style="margin: 0; font-size: 16px; text-transform: uppercase; font-weight: bold; tracking-wide: 0.5px;">PEMERINTAH KOTA DENPASAR</h2>
+                        <h2 style="margin: 2px 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
+                        <p style="margin: 0; font-size: 12px; font-weight: normal;">Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
+                        <hr style="border: none; border-top: 1px solid #000; margin: 15px 0 20px 0;">
                     </div>
                     
                     <div style="text-align: center; margin-bottom: 25px;">
-                        <h4 style="margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase;">BUKTI PENDAFTARAN SPMB ONLINE SD NEGERI KOTA DENPASAR</h4>
-                        <h4 style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold; text-transform: uppercase;">TAHUN AJARAN 2026/2027</h4>
-                        <div style="display: inline-block; border: 1px solid #000; padding: 6px 15px; font-weight: bold; font-size: 14px; background-color: #f8fafc; margin-top: 12px;">
-                            Nomor Pendaftaran &nbsp;: &nbsp; <span style="font-family: monospace; font-size: 15px;">${nomor}</span>
-                        </div>
+                        <h3 style="margin: 0; font-size: 15px; font-weight: bold; text-transform: uppercase;">BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h3>
+                        <h3 style="margin: 3px 0 15px 0; font-size: 15px; font-weight: bold; text-transform: uppercase;">TAHUN AJARAN 2026/2027</h3>
+                        <p style="margin: 0; font-size: 13px; font-weight: bold;">Nomor Pendaftaran</p>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; font-weight: bold; font-family: monospace; color: #000;">${nomor}</p>
                     </div>
 
-                    <div style="margin: 20px 0 8px 0; font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 4px; text-transform: uppercase;">1. Data Calon Peserta Didik</div>
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <div style="margin: 20px 0 10px 0; font-size: 13px; font-weight: bold;">1. Data Calon Peserta Didik</div>
+                    <table style="width: 100%; border-collapse: collapse; margin-left: 10px;">
                         ${dataRowsHtml}
                     </table>
 
-                    <div style="margin: 25px 0 8px 0; font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 4px; text-transform: uppercase;">2. Pernyataan Keaslian</div>
-                    <p style="margin: 0; font-size: 11.5px; text-align: justify; color: #222; font-style: italic; line-height: 1.5;">
+                    <div style="margin: 25px 0 8px 0; font-size: 13px; font-weight: bold;">2. Pernyataan Keaslian</div>
+                    <p style="margin: 0 0 0 10px; font-size: 12px; text-align: justify; color: #000; line-height: 1.5;">
                         "Saya yang bertanda tangan di bawah ini menyatakan bahwa data yang diisikan dalam formulir pendaftaran ini adalah benar dan dapat dipertanggungjawabkan. Apabila dikemudian hari ditemukan ketidaksesuaian data, saya bersedia menerima sanksi pembatalan pendaftaran."
                     </p>
 
-                    <table style="width: 100%; margin-top: 50px; border-collapse: collapse;">
+                    <table style="width: 100%; margin-top: 40px; border-collapse: collapse; font-size: 13px;">
                         <tr>
-                            <td style="width: 50%; text-align: center; font-size: 12px; vertical-align: top;">
-                                <p style="margin: 0 0 60px 0;">Verifikator / Panitia SPMB<br><b>SD Negeri 17 Dauh Puri</b></p>
-                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
+                            <td style="width: 50%; text-align: center; vertical-align: top;">
+                                <p style="margin: 0 0 65px 0;">Verifikator/Panitia SPMB<br>SD Negeri 17 Dauh Puri</p>
+                                <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
                             </td>
-                            <td style="width: 50%; text-align: center; font-size: 12px; vertical-align: top;">
+                            <td style="width: 50%; text-align: center; vertical-align: top;">
                                 <p style="margin: 0;">Denpasar, 26 Juni 2026</p>
-                                <p style="margin: 0 0 60px 0;">Orang Tua / Wali Murid</p>
-                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
+                                <p style="margin: 0 0 65px 0;">Orang Tua / Wali Murid</p>
+                                <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
                             </td>
                         </tr>
                     </table>
 
-                    <div style="margin-top: 50px; border: 1px dashed #777; padding: 12px; background-color: #fafafa; font-size: 11px; line-height: 1.5;">
-                        <b style="text-transform: uppercase; color: #c2410c;">Penting:</b>
-                        <ul style="margin: 4px 0 0 15px; padding: 0;">
+                    <div style="margin-top: 40px; border-top: 1px dashed #000; padding-top: 15px; font-size: 12px;">
+                        <b style="text-transform: uppercase;">PENTING:</b>
+                        <ul style="margin: 5px 0 0 0; padding-left: 15px; line-height: 1.5;">
                             <li>Simpan bukti pendaftaran ini sebagai syarat mutlak berkas pendaftaran ulang.</li>
-                            <li>Pantau terus pengumuman peringkat berkas secara berkala di portal sistem informasi.</li>
+                            <li>Pantau terus informasi selanjutnya secara berkala di media sosial SD Negeri 17 Dauh Puri.</li>
                         </ul>
                     </div>
                 </div>
             `;
 
-            // Trigger cetak sistem multi-device
             window.print();
         }
 
