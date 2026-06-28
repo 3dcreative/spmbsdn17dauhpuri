@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pendaftaran Ulang SPMB SD Negeri 17 Dauh Puri</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        .shimmer {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen flex flex-col justify-between">
+
+    <div id="login-screen" class="flex-grow flex flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-slate-100 mb-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                    <i class="fa-solid fa-graduation-cap text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Selamat Datang</h2>
+                <p class="text-slate-500 text-sm mt-1">SPMB SD Negeri 17 Dauh Puri</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Masukkan username">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="password" required class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
+                            <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                    <span>Masuk Aplikasi</span>
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden flex-grow flex flex-col md:flex-row">
+        
+        <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col justify-between border-r border-slate-800">
+            <div>
+                <div class="p-6 border-b border-slate-800 flex items-center gap-3 bg-slate-950">
+                    <i class="fa-solid fa-school text-blue-500 text-xl"></i>
+                    <span class="font-bold text-white text-base tracking-wide">SDN 17 Dauh Puri</span>
+                </div>
+                <nav class="p-4 space-y-1">
+                    <button onclick="switchPage('daftar-ulang')" id="menu-daftar-ulang" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white cursor-pointer">
+                        <i class="fa-solid fa-user-plus w-5 text-center"></i> Daftar Ulang
+                    </button>
+                    <button onclick="switchPage('data-tersimpan')" id="menu-data-tersimpan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-400 hover:bg-slate-800 hover:text-slate-200 cursor-pointer">
+                        <i class="fa-solid fa-folder-open w-5 text-center"></i> Data Tersimpan
+                    </button>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 bg-slate-950/50">
+                <button onclick="handleLogout()" class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 transition-all cursor-pointer">
+                    <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> Keluar Sistem
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-grow flex flex-col bg-slate-50 overflow-x-hidden">
+            
+            <div id="page-daftar-ulang" class="p-6 space-y-6">
+                <div class="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h1 class="text-2xl font-extrabold">Formulir Pendaftaran Ulang</h1>
+                        <p class="text-blue-100 text-xs mt-1">Cari nama calon siswa hasil seleksi berkas fisik dinas pendidikan.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cari Calon Murid</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="search-bar" oninput="filterDataLulus()" class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ketik nama murid...">
+                            </div>
+                            <div id="search-results" class="mt-4 max-h-60 overflow-y-auto space-y-2 hidden"></div>
+                            <div id="shimmer-loader" class="mt-4 space-y-2 hidden">
+                                <div class="shimmer h-12 rounded-xl w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
+                                <h3 class="font-bold text-slate-800 text-lg">Form Verifikasi Data</h3>
+                                <span id="status-badge" class="hidden bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold border border-amber-200">Terpilih</span>
+                            </div>
+                            <div id="dynamic-form-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2 text-center py-12 text-slate-400">
+                                    <i class="fa-solid fa-id-card-clip text-4xl mb-3 block opacity-50"></i>
+                                    <p class="text-sm">Silakan pilih nama murid hasil saringan terlebih dahulu.</p>
+                                </div>
+                            </div>
+                            <div id="form-actions" class="mt-8 pt-4 border-t border-slate-100 flex gap-3 justify-end hidden">
+                                <button onclick="simpanPendaftaran()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition-all flex items-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Verifikasi & Simpan Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-data-tersimpan" class="p-6 space-y-6 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-800">Daftar Data Tersimpan</h1>
+                        <p class="text-xs text-slate-400 mt-0.5">Memuat seluruh arsip murid yang telah tervalidasi masuk sistem.</p>
+                    </div>
+                    <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-5 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-file-excel text-base"></i> Ekspor ke File Excel
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-200 text-xs font-semibold tracking-wider uppercase">
+                                    <th class="p-4 border-b border-slate-800">Tanggal Daftar</th>
+                                    <th class="p-4 border-b border-slate-800">No. Pendaftaran</th>
+                                    <th class="p-4 border-b border-slate-800">Nama Lengkap</th>
+                                    <th class="p-4 border-b border-slate-800 text-center">Aksi Pilihan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="saved-data-table-body" class="divide-y divide-slate-100 text-sm text-slate-700 font-medium">
+                                <tr>
+                                    <td colspan="4" class="p-8 text-center text-slate-400">Sedang memuat database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs font-medium text-slate-400 w-full z-20">
+        &copy; 2026 3D Creative. All Rights Reserved.
+    </footer>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwV78YvlT2kfK2OE4kTJKthWGcMLyG6zMkuJits1UkDxXFE5CP2PEKH-CJoiv87n235Sw/exec";
+
+        let dbHeaders = [];
+        let dbStudents = [];
+        let savedStudents = [];
+        let selectedStudent = null;
+        let isEditMode = false;
+        let editRowIndex = null;
+
+        window.onload = function() {
+            if(sessionStorage.getItem("isLoggedIn") === "true") {
+                showDashboard();
+            }
+        };
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById("password");
+            const toggleIcon = document.getElementById("password-toggle-icon");
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                toggleIcon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                passInput.type = "password";
+                toggleIcon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("dashboard-screen").classList.remove("hidden");
+            fetchDatabaseLulus();
+            fetchSavedData();
+        }
+
+        function switchPage(pageName) {
+            const btnDaftar = document.getElementById("menu-daftar-ulang");
+            const btnSimpan = document.getElementById("menu-data-tersimpan");
+            const pageDaftar = document.getElementById("page-daftar-ulang");
+            const pageSimpan = document.getElementById("page-data-tersimpan");
+
+            if(pageName === 'daftar-ulang') {
+                btnDaftar.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white cursor-pointer";
+                btnSimpan.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-400 hover:bg-slate-800 hover:text-slate-200 cursor-pointer";
+                pageDaftar.classList.remove("hidden");
+                pageSimpan.classList.add("hidden");
+            } else {
+                btnSimpan.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white cursor-pointer";
+                btnDaftar.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-400 hover:bg-slate-800 hover:text-slate-200 cursor-pointer";
+                pageSimpan.classList.remove("hidden");
+                pageDaftar.classList.add("hidden");
+                fetchSavedData();
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
+
+            Swal.fire({
+                title: 'Memproses Autentikasi',
+                html: 'Mohon tunggu sejenak...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(`${API_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    sessionStorage.setItem("isLoggedIn", "true");
+                    Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: 'Selamat datang kembali.', timer: 1500, showConfirmButton: false });
+                    showDashboard();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Username atau Password salah!' });
+                }
+            })
+            .catch(() => {
+                Swal.fire({ icon: 'error', title: 'Koneksi Gagal', text: 'Periksa integrasi Google Apps Script Anda.' });
+            });
+        }
+
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.reload();
+        }
+
+        function fetchDatabaseLulus() {
+            document.getElementById("shimmer-loader").classList.remove("hidden");
+            fetch(`${API_URL}?action=getDataLulus`)
+            .then(res => res.json())
+            .then(data => {
+                dbHeaders = data.headers;
+                dbStudents = data.students;
+                document.getElementById("shimmer-loader").classList.add("hidden");
+                document.getElementById("search-results").classList.remove("hidden");
+                renderListMurid(dbStudents);
+            });
+        }
+
+        function fetchSavedData() {
+            fetch(`${API_URL}?action=getSavedData`)
+            .then(res => res.json())
+            .then(data => {
+                savedStudents = data.students;
+                renderSavedDataTable();
+            });
+        }
+
+        function renderSavedDataTable() {
+            const body = document.getElementById("saved-data-table-body");
+            body.innerHTML = "";
+
+            if(savedStudents.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada murid yang melakukan daftar ulang.</td></tr>`;
+                return;
+            }
+
+            savedStudents.forEach((student, index) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50/80 transition-all";
+                tr.innerHTML = `
+                    <td class="p-4 border-b border-slate-100">${student[0]}</td>
+                    <td class="p-4 border-b border-slate-100 font-mono text-xs text-blue-600">${student[1]}</td>
+                    <td class="p-4 border-b border-slate-100">${student[2]}</td>
+                    <td class="p-4 border-b border-slate-100 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="aksiCetakDariTabel(${index})" title="Cetak Bukti" class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all cursor-pointer"><i class="fa-solid fa-print"></i></button>
+                            <button onclick="aksiEditDariTabel(${index})" title="Ubah Data" class="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-all cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="aksiHapusDariTabel(${index})" title="Hapus Data" class="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function renderListMurid(students) {
+            const container = document.getElementById("search-results");
+            container.innerHTML = "";
+            students.forEach(student => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-3 text-sm rounded-xl border border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center font-medium text-slate-700 cursor-pointer";
+                btn.innerHTML = `<span>${student[0]}</span><i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>`;
+                btn.onclick = () => selectStudent(student, false);
+                container.appendChild(btn);
+            });
+        }
+
+        function filterDataLulus() {
+            const query = document.getElementById("search-bar").value.toLowerCase();
+            const filtered = dbStudents.filter(student => student[0].toLowerCase().includes(query));
+            renderListMurid(filtered);
+        }
+
+        function selectStudent(student, editMode = false) {
+            selectedStudent = student;
+            document.getElementById("status-badge").classList.remove("hidden");
+            document.getElementById("form-actions").classList.remove("hidden");
+            
+            const container = document.getElementById("dynamic-form-container");
+            container.innerHTML = "";
+
+            const startHeaderIndex = editMode ? 2 : 0;
+
+            dbHeaders.forEach((header, i) => {
+                const box = document.createElement("div");
+                box.className = "flex flex-col gap-1";
+                box.innerHTML = `
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">${header}</label>
+                    <input type="text" id="input-field-${i}" value="${student[startHeaderIndex + i] || ''}" ${editMode ? '' : 'readonly'} class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        // PERBAIKAN 1: Menghilangkan opsi penawaran Cetak Bukti saat baru menyimpan pendaftaran ulang
+        function simpanPendaftaran() {
+            let dataPaket = [];
+            if(isEditMode) {
+                dbHeaders.forEach((h, i) => {
+                    dataPaket.push(document.getElementById(`input-field-${i}`).value);
+                });
+            } else {
+                dataPaket = selectedStudent;
+            }
+
+            Swal.fire({
+                title: isEditMode ? 'Memperbarui Data' : 'Menyimpan Verifikasi',
+                text: 'Sedang memproses database...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ 
+                    action: isEditMode ? "editData" : "saveData",
+                    studentData: dataPaket,
+                    rowIndex: editRowIndex
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: isEditMode ? 'Perubahan Disimpan!' : 'Data Berhasil Disimpan',
+                        html: isEditMode ? 'Data siswa telah diperbarui.' : `Nomor Registrasi: <b>${data.nomor}</b>`,
+                        confirmButtonText: 'Oke',
+                        confirmButtonColor: '#2563eb'
+                    }).then(() => {
+                        resetFormKeadaanAwal();
+                    });
+                }
+            });
+        }
+
+        function resetFormKeadaanAwal() {
+            document.getElementById("dynamic-form-container").innerHTML = `<div class="md:col-span-2 text-center py-12 text-slate-400"><i class="fa-solid fa-id-card-clip text-4xl mb-3 block opacity-50"></i><p class="text-sm">Silakan pilih nama murid hasil saringan terlebih dahulu.</p></div>`;
+            document.getElementById("form-actions").classList.add("hidden");
+            document.getElementById("status-badge").classList.add("hidden");
+            selectedStudent = null;
+            isEditMode = false;
+            editRowIndex = null;
+            fetchSavedData();
+        }
+
+        function aksiCetakDariTabel(idx) {
+            const rawInfo = savedStudents[idx];
+            cetakBuktiA4(rawInfo[1], rawInfo, true);
+        }
+
+        function aksiEditDariTabel(idx) {
+            isEditMode = true;
+            editRowIndex = idx;
+            const rawInfo = savedStudents[idx];
+            switchPage('daftar-ulang');
+            selectStudent(rawInfo, true);
+            Swal.fire({ icon: 'info', title: 'Mode Pengeditan Aktif', text: 'Silakan ubah data di kolom form lalu klik Simpan.', timer: 2000, showConfirmButton: false });
+        }
+
+        function aksiHapusDariTabel(idx) {
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Data yang dihapus dari Google Sheets tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus data!',
+                cancelButtonText: 'Batalkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    
+                    fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "deleteData", rowIndex: idx })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.status === "success") {
+                            Swal.fire('Terhapus!', 'Data pendaftaran murid telah dihapus dari sistem.', 'success');
+                            fetchSavedData();
+                        }
+                    });
+                }
+            });
+        }
+
+        // PERBAIKAN 2: Menggunakan iFrame Dokumen terisolasi agar cetak kertas A4 muncul 100% sempurna tanpa lembar kosong
+        function cetakBuktiA4(nomor, student, dariTabel = false) {
+            let dataRowsHtml = '';
+            
+            dbHeaders.forEach((header, i) => {
+                const valIdx = dariTabel ? (2 + i) : i;
+                dataRowsHtml += `
+                    <tr>
+                        <td style="width: 35%; padding: 6px 0; font-size: 13px; color: #333; font-weight: bold; vertical-align: top;">${header}</td>
+                        <td style="width: 3%; padding: 6px 0; font-size: 13px; color: #333; vertical-align: top;">:</td>
+                        <td style="width: 62%; padding: 6px 0; font-size: 13px; color: #111; vertical-align: top;">${student[valIdx] || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            const templateCetakHtml = `
+                <html>
+                <head>
+                    <title>Cetak Bukti Pendaftaran</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; color: #000; padding: 10mm; margin: 0; }
+                        table { width: 100%; border-collapse: collapse; }
+                        .kop-surat { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
+                        .kop-surat h3 { margin: 0; font-size: 14px; text-transform: uppercase; font-weight: bold; }
+                        .kop-surat h2 { margin: 2px 0; font-size: 16px; text-transform: uppercase; font-weight: bold; }
+                        .kop-surat p { margin: 0; font-size: 11px; color: #333; }
+                        .judul-box { text-align: center; margin-bottom: 20px; }
+                        .judul-box h4 { margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+                        .nomor-badge { display: inline-block; border: 1px solid #000; padding: 6px 15px; font-weight: bold; font-size: 14px; background-color: #f8fafc; margin-top: 10px; }
+                        .sub-judul { margin: 15px 0 5px 0; font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+                        .pernyataan { margin: 0; font-size: 12px; text-align: justify; color: #222; font-style: italic; }
+                        .ttd-table { width: 100%; margin-top: 40px; }
+                        .ttd-cell { width: 50%; text-align: center; font-size: 12px; vertical-align: top; }
+                        .noted { margin-top: 40px; border: 1px dashed #777; padding: 10px; background-color: #fafafa; font-size: 11px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="kop-surat">
+                        <h3>PEMERINTAH KOTA DENPASAR</h3>
+                        <h2>DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
+                        <p>Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
+                    </div>
+                    
+                    <div class="judul-box">
+                        <h4>BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h4>
+                        <h4 style="margin-top: 2px;">TAHUN AJARAN 2026/2027</h4>
+                        <div class="nomor-badge">
+                            Nomor Pendaftaran &nbsp;: &nbsp; <span style="font-family: monospace; font-size: 15px;">${nomor}</span>
+                        </div>
+                    </div>
+
+                    <div class="sub-judul">1. Data Calon Peserta Didik</div>
+                    <table>
+                        ${dataRowsHtml}
+                    </table>
+
+                    <div class="sub-judul">2. Pernyataan Keaslian</div>
+                    <p class="pernyataan">
+                        "Saya yang bertanda tangan di bawah ini menyatakan bahwa data yang diisikan dalam formulir pendaftaran ini adalah benar dan dapat dipertanggungjawabkan. Apabila dikemudian hari ditemukan ketidaksesuaian data, saya bersedia menerima sanksi pembatalan pendaftaran."
+                    </p>
+
+                    <table class="ttd-table">
+                        <tr>
+                            <td class="ttd-cell">
+                                <p style="margin: 0 0 55px 0;">Verifikator / Panitia SPMB<br><b>SD Negeri 17 Dauh Puri</b></p>
+                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
+                            </td>
+                            <td class="ttd-cell">
+                                <p style="margin: 0;">Denpasar, 26 Juni 2026</p>
+                                <p style="margin: 0 0 55px 0;">Orang Tua / Wali Murid</p>
+                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="noted">
+                        <b style="text-transform: uppercase; color: #c2410c;">Penting:</b>
+                        <ul style="margin: 3px 0 0 15px; padding: 0;">
+                            <li>Simpan bukti pendaftaran ini sebagai syarat mutlak berkas pendaftaran ulang.</li>
+                            <li>Pantau terus informasi selanjutnya secara berkala di media sosial SD Negeri 17 Dauh Puri.</li>
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Membuat iFrame bayangan khusus pencetakan dokumen
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '0px';
+            iframe.style.height = '0px';
+            iframe.style.border = 'none';
+            document.body.appendChild(iframe);
+
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(templateCetakHtml);
+            doc.close();
+
+            // Eksekusi print setelah dokumen iFrame terisi penuh
+            iframe.contentWindow.focus();
+            setTimeout(() => {
+                iframe.contentWindow.print();
+                document.body.removeChild(iframe); // Hapus kembali iFrame setelah dialog cetak selesai
+            }, 500);
+        }
+
+        function downloadRekapExcel() {
+            if(savedStudents.length === 0) {
+                Swal.fire({ icon: 'info', title: 'Data Kosong', text: 'Tidak ada rekapan data pendaftaran untuk diunduh.' });
+                return;
+            }
+
+            const rekapData = savedStudents.map((student, index) => {
+                let item = { 
+                    "No. Urut": index + 1,
+                    "Tanggal Verifikasi": student[0],
+                    "Nomor Registrasi": student[1]
+                };
+                dbHeaders.forEach((header, i) => {
+                    item[header] = student[2 + i] || "-";
+                });
+                return item;
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(rekapData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Pendaftaran Ulang");
+            XLSX.writeFile(workbook, "Rekap_Daftar_Ulang_SDN17.xlsx");
+        }
+    </script>
+</body>
+</html>
