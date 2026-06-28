@@ -19,21 +19,6 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
-        /* PERBAIKAN KHUSUS CETAK DI HP: Menyembunyikan seluruh interface dasbor utama saat mode cetak aktif */
-        @media print {
-            body > *:not(iframe) {
-                display: none !important;
-            }
-            iframe {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                display: block !important;
-            }
-        }
     </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen flex flex-col justify-between">
@@ -52,22 +37,22 @@
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
-                        <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" placeholder="Masukkan username">
+                        <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Masukkan username">
                     </div>
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="password" required class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" placeholder="••••••••">
+                        <input type="password" id="password" required class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
                             <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer text-sm">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer">
                     <span>Masuk Aplikasi</span>
-                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
                 </button>
             </form>
         </div>
@@ -360,6 +345,7 @@
             });
         }
 
+        // PERBAIKAN 1: Menghilangkan opsi penawaran Cetak Bukti saat baru menyimpan pendaftaran ulang
         function simpanPendaftaran() {
             let dataPaket = [];
             if(isEditMode) {
@@ -454,85 +440,84 @@
             });
         }
 
+        // PERBAIKAN 2: Menggunakan iFrame Dokumen terisolasi agar cetak kertas A4 muncul 100% sempurna tanpa lembar kosong
         function cetakBuktiA4(nomor, student, dariTabel = false) {
             let dataRowsHtml = '';
+            
             dbHeaders.forEach((header, i) => {
                 const valIdx = dariTabel ? (2 + i) : i;
                 dataRowsHtml += `
                     <tr>
-                        <td style="width: 30%; padding: 4px 0; font-size: 13px; color: #000; font-weight: normal; vertical-align: top;">${header}</td>
-                        <td style="width: 70%; padding: 4px 0; font-size: 13px; color: #000; vertical-align: top;">: ${student[valIdx] || '-'}</td>
+                        <td style="width: 35%; padding: 6px 0; font-size: 13px; color: #333; font-weight: bold; vertical-align: top;">${header}</td>
+                        <td style="width: 3%; padding: 6px 0; font-size: 13px; color: #333; vertical-align: top;">:</td>
+                        <td style="width: 62%; padding: 6px 0; font-size: 13px; color: #111; vertical-align: top;">${student[valIdx] || '-'}</td>
                     </tr>
                 `;
             });
 
             const templateCetakHtml = `
-                <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Cetak Bukti Pendaftaran</title>
                     <style>
-                        @page { size: A4; margin: 20mm; }
-                        body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0; line-height: 1.4; }
-                        .header { text-align: center; }
-                        .header h2 { margin: 0; font-size: 16px; text-transform: uppercase; font-weight: bold; }
-                        .header p { margin: 0; font-size: 12px; font-weight: normal; }
-                        .divider { border: none; border-top: 1px solid #000; margin: 15px 0 20px 0; }
-                        .title-box { text-align: center; margin-bottom: 25px; }
-                        .title-box h3 { margin: 0; font-size: 15px; font-weight: bold; text-transform: uppercase; }
-                        .title-box .reg-label { margin: 0; font-size: 13px; font-weight: bold; }
-                        .title-box .reg-num { margin: 5px 0 0 0; font-size: 14px; font-weight: bold; font-family: monospace; }
-                        .section-title { font-size: 13px; font-weight: bold; margin: 20px 0 10px 0; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-left: 10px; }
-                        .statement { margin: 0 0 0 10px; font-size: 12px; text-align: justify; line-height: 1.5; }
-                        .ttd-table { width: 100%; margin-top: 40px; border-collapse: collapse; font-size: 13px; }
-                        .ttd-cell { width: 50%; text-align: center; vertical-align: top; }
-                        .important-box { margin-top: 40px; border-top: 1px dashed #000; padding-top: 15px; font-size: 12px; }
-                        .important-box ul { margin: 5px 0 0 0; padding-left: 15px; line-height: 1.5; }
+                        body { font-family: Arial, sans-serif; color: #000; padding: 10mm; margin: 0; }
+                        table { width: 100%; border-collapse: collapse; }
+                        .kop-surat { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
+                        .kop-surat h3 { margin: 0; font-size: 14px; text-transform: uppercase; font-weight: bold; }
+                        .kop-surat h2 { margin: 2px 0; font-size: 16px; text-transform: uppercase; font-weight: bold; }
+                        .kop-surat p { margin: 0; font-size: 11px; color: #333; }
+                        .judul-box { text-align: center; margin-bottom: 20px; }
+                        .judul-box h4 { margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+                        .nomor-badge { display: inline-block; border: 1px solid #000; padding: 6px 15px; font-weight: bold; font-size: 14px; background-color: #f8fafc; margin-top: 10px; }
+                        .sub-judul { margin: 15px 0 5px 0; font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+                        .pernyataan { margin: 0; font-size: 12px; text-align: justify; color: #222; font-style: italic; }
+                        .ttd-table { width: 100%; margin-top: 40px; }
+                        .ttd-cell { width: 50%; text-align: center; font-size: 12px; vertical-align: top; }
+                        .noted { margin-top: 40px; border: 1px dashed #777; padding: 10px; background-color: #fafafa; font-size: 11px; }
                     </style>
                 </head>
                 <body>
-                    <div class="header">
-                        <h2>PEMERINTAH KOTA DENPASAR</h2>
+                    <div class="kop-surat">
+                        <h3>PEMERINTAH KOTA DENPASAR</h3>
                         <h2>DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
                         <p>Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
-                        <hr class="divider">
                     </div>
                     
-                    <div class="title-box">
-                        <h3>BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h3>
-                        <h3 style="margin-top: 3px; margin-bottom: 15px;">TAHUN AJARAN 2026/2027</h3>
-                        <p class="reg-label">Nomor Pendaftaran</p>
-                        <p class="reg-num">${nomor}</p>
+                    <div class="judul-box">
+                        <h4>BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h4>
+                        <h4 style="margin-top: 2px;">TAHUN AJARAN 2026/2027</h4>
+                        <div class="nomor-badge">
+                            Nomor Pendaftaran &nbsp;: &nbsp; <span style="font-family: monospace; font-size: 15px;">${nomor}</span>
+                        </div>
                     </div>
 
-                    <div class="section-title">1. Data Calon Peserta Didik</div>
-                    <table class="data-table">
+                    <div class="sub-judul">1. Data Calon Peserta Didik</div>
+                    <table>
                         ${dataRowsHtml}
                     </table>
 
-                    <div class="section-title">2. Pernyataan Keaslian</div>
-                    <p class="statement">
+                    <div class="sub-judul">2. Pernyataan Keaslian</div>
+                    <p class="pernyataan">
                         "Saya yang bertanda tangan di bawah ini menyatakan bahwa data yang diisikan dalam formulir pendaftaran ini adalah benar dan dapat dipertanggungjawabkan. Apabila dikemudian hari ditemukan ketidaksesuaian data, saya bersedia menerima sanksi pembatalan pendaftaran."
                     </p>
 
                     <table class="ttd-table">
                         <tr>
                             <td class="ttd-cell">
-                                <p style="margin: 0 0 65px 0;">Verifikator/Panitia SPMB<br>SD Negeri 17 Dauh Puri</p>
-                                <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
+                                <p style="margin: 0 0 55px 0;">Verifikator / Panitia SPMB<br><b>SD Negeri 17 Dauh Puri</b></p>
+                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
                             </td>
                             <td class="ttd-cell">
                                 <p style="margin: 0;">Denpasar, 26 Juni 2026</p>
-                                <p style="margin: 0 0 65px 0;">Orang Tua / Wali Murid</p>
-                                <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
+                                <p style="margin: 0 0 55px 0;">Orang Tua / Wali Murid</p>
+                                <p style="margin: 0; font-weight: bold;">( ................................................... )</p>
                             </td>
                         </tr>
                     </table>
 
-                    <div class="important-box">
-                        <b style="text-transform: uppercase;">PENTING:</b>
-                        <ul>
+                    <div class="noted">
+                        <b style="text-transform: uppercase; color: #c2410c;">Penting:</b>
+                        <ul style="margin: 3px 0 0 15px; padding: 0;">
                             <li>Simpan bukti pendaftaran ini sebagai syarat mutlak berkas pendaftaran ulang.</li>
                             <li>Pantau terus informasi selanjutnya secara berkala di media sosial SD Negeri 17 Dauh Puri.</li>
                         </ul>
@@ -541,14 +526,12 @@
                 </html>
             `;
 
-            // Membuat iFrame transparan untuk mencetak
+            // Membuat iFrame bayangan khusus pencetakan dokumen
             const iframe = document.createElement('iframe');
-            iframe.style.position = 'fixed';
-            iframe.style.right = '0';
-            iframe.style.bottom = '0';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            iframe.style.border = '0';
+            iframe.style.position = 'absolute';
+            iframe.style.width = '0px';
+            iframe.style.height = '0px';
+            iframe.style.border = 'none';
             document.body.appendChild(iframe);
 
             const doc = iframe.contentWindow.document;
