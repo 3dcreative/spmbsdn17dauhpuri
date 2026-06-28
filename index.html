@@ -20,30 +20,23 @@
             100% { background-position: -200% 0; }
         }
 
-        /* PER perbaikan sistem cetak HP tanpa merubah layout */
+        /* PERBAIKAN KHUSUS CETAK DI HP: Menyembunyikan seluruh interface dasbor utama saat mode cetak aktif */
         @media print {
-            body *, #login-screen, #dashboard-screen, footer {
+            body > *:not(iframe) {
                 display: none !important;
             }
-            #print-area-wrapper, #print-area-wrapper * {
+            iframe {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
                 display: block !important;
-            }
-            #print-area-wrapper {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-                color: black;
-                padding: 0;
-                margin: 0;
             }
         }
     </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen flex flex-col justify-between">
-
-    <div id="print-area-wrapper" class="hidden"></div>
 
     <div id="login-screen" class="flex-grow flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-slate-100 mb-8">
@@ -59,22 +52,22 @@
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
-                        <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Masukkan username">
+                        <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" placeholder="Masukkan username">
                     </div>
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="password" required class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••">
+                        <input type="password" id="password" required class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
                             <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer text-sm">
                     <span>Masuk Aplikasi</span>
-                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </form>
         </div>
@@ -190,7 +183,7 @@
     </footer>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwV78YvlT2kfK2OE4kTJKthWGcMLyG6zMkuJits1UkDxXFE5CP2PEKH-CJoiv87n235Sw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbw6H3Z0Hh4Aas-w_bVstzbyN3-6_t_6fVjV2Yp_bL-nizK0wN-F6V6b_iXkXf_e-vLp/exec";
 
         let dbHeaders = [];
         let dbStudents = [];
@@ -217,7 +210,6 @@
             }
         }
 
-        // ... Seluruh fungsi manajemen dashboard dipertahankan utuh ...
         function showDashboard() {
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("dashboard-screen").classList.remove("hidden");
@@ -247,6 +239,7 @@
 
         function handleLogin(e) {
             e.preventDefault();
+            
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
 
@@ -461,11 +454,8 @@
             });
         }
 
-        // KEMBALI 100% KE STRUKTUR FORMAT AWAL BUKTI DAFTAR 1
         function cetakBuktiA4(nomor, student, dariTabel = false) {
-            const printWrapper = document.getElementById("print-area-wrapper");
             let dataRowsHtml = '';
-            
             dbHeaders.forEach((header, i) => {
                 const valIdx = dariTabel ? (2 + i) : i;
                 dataRowsHtml += `
@@ -476,39 +466,63 @@
                 `;
             });
 
-            printWrapper.innerHTML = `
-                <div style="font-family: Arial, sans-serif; color: #000; padding: 40px; background: white; max-width: 800px; margin: 0 auto; line-height: 1.4;">
-                    <div style="text-align: center; font-family: Arial, sans-serif;">
-                        <h2 style="margin: 0; font-size: 16px; text-transform: uppercase; font-weight: bold; tracking-wide: 0.5px;">PEMERINTAH KOTA DENPASAR</h2>
-                        <h2 style="margin: 2px 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
-                        <p style="margin: 0; font-size: 12px; font-weight: normal;">Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
-                        <hr style="border: none; border-top: 1px solid #000; margin: 15px 0 20px 0;">
+            const templateCetakHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cetak Bukti Pendaftaran</title>
+                    <style>
+                        @page { size: A4; margin: 20mm; }
+                        body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0; line-height: 1.4; }
+                        .header { text-align: center; }
+                        .header h2 { margin: 0; font-size: 16px; text-transform: uppercase; font-weight: bold; }
+                        .header p { margin: 0; font-size: 12px; font-weight: normal; }
+                        .divider { border: none; border-top: 1px solid #000; margin: 15px 0 20px 0; }
+                        .title-box { text-align: center; margin-bottom: 25px; }
+                        .title-box h3 { margin: 0; font-size: 15px; font-weight: bold; text-transform: uppercase; }
+                        .title-box .reg-label { margin: 0; font-size: 13px; font-weight: bold; }
+                        .title-box .reg-num { margin: 5px 0 0 0; font-size: 14px; font-weight: bold; font-family: monospace; }
+                        .section-title { font-size: 13px; font-weight: bold; margin: 20px 0 10px 0; }
+                        .data-table { width: 100%; border-collapse: collapse; margin-left: 10px; }
+                        .statement { margin: 0 0 0 10px; font-size: 12px; text-align: justify; line-height: 1.5; }
+                        .ttd-table { width: 100%; margin-top: 40px; border-collapse: collapse; font-size: 13px; }
+                        .ttd-cell { width: 50%; text-align: center; vertical-align: top; }
+                        .important-box { margin-top: 40px; border-top: 1px dashed #000; padding-top: 15px; font-size: 12px; }
+                        .important-box ul { margin: 5px 0 0 0; padding-left: 15px; line-height: 1.5; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>PEMERINTAH KOTA DENPASAR</h2>
+                        <h2>DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h2>
+                        <p>Jalan Mawar No.6 Denpasar Telp. (0361) 247521</p>
+                        <hr class="divider">
                     </div>
                     
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <h3 style="margin: 0; font-size: 15px; font-weight: bold; text-transform: uppercase;">BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h3>
-                        <h3 style="margin: 3px 0 15px 0; font-size: 15px; font-weight: bold; text-transform: uppercase;">TAHUN AJARAN 2026/2027</h3>
-                        <p style="margin: 0; font-size: 13px; font-weight: bold;">Nomor Pendaftaran</p>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; font-weight: bold; font-family: monospace; color: #000;">${nomor}</p>
+                    <div class="title-box">
+                        <h3>BUKTI PENDAFTARAN ULANG SPMB SD NEGERI 17 DAUH PURI</h3>
+                        <h3 style="margin-top: 3px; margin-bottom: 15px;">TAHUN AJARAN 2026/2027</h3>
+                        <p class="reg-label">Nomor Pendaftaran</p>
+                        <p class="reg-num">${nomor}</p>
                     </div>
 
-                    <div style="margin: 20px 0 10px 0; font-size: 13px; font-weight: bold;">1. Data Calon Peserta Didik</div>
-                    <table style="width: 100%; border-collapse: collapse; margin-left: 10px;">
+                    <div class="section-title">1. Data Calon Peserta Didik</div>
+                    <table class="data-table">
                         ${dataRowsHtml}
                     </table>
 
-                    <div style="margin: 25px 0 8px 0; font-size: 13px; font-weight: bold;">2. Pernyataan Keaslian</div>
-                    <p style="margin: 0 0 0 10px; font-size: 12px; text-align: justify; color: #000; line-height: 1.5;">
+                    <div class="section-title">2. Pernyataan Keaslian</div>
+                    <p class="statement">
                         "Saya yang bertanda tangan di bawah ini menyatakan bahwa data yang diisikan dalam formulir pendaftaran ini adalah benar dan dapat dipertanggungjawabkan. Apabila dikemudian hari ditemukan ketidaksesuaian data, saya bersedia menerima sanksi pembatalan pendaftaran."
                     </p>
 
-                    <table style="width: 100%; margin-top: 40px; border-collapse: collapse; font-size: 13px;">
+                    <table class="ttd-table">
                         <tr>
-                            <td style="width: 50%; text-align: center; vertical-align: top;">
+                            <td class="ttd-cell">
                                 <p style="margin: 0 0 65px 0;">Verifikator/Panitia SPMB<br>SD Negeri 17 Dauh Puri</p>
                                 <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
                             </td>
-                            <td style="width: 50%; text-align: center; vertical-align: top;">
+                            <td class="ttd-cell">
                                 <p style="margin: 0;">Denpasar, 26 Juni 2026</p>
                                 <p style="margin: 0 0 65px 0;">Orang Tua / Wali Murid</p>
                                 <p style="margin: 0;">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</p>
@@ -516,17 +530,38 @@
                         </tr>
                     </table>
 
-                    <div style="margin-top: 40px; border-top: 1px dashed #000; padding-top: 15px; font-size: 12px;">
+                    <div class="important-box">
                         <b style="text-transform: uppercase;">PENTING:</b>
-                        <ul style="margin: 5px 0 0 0; padding-left: 15px; line-height: 1.5;">
+                        <ul>
                             <li>Simpan bukti pendaftaran ini sebagai syarat mutlak berkas pendaftaran ulang.</li>
                             <li>Pantau terus informasi selanjutnya secara berkala di media sosial SD Negeri 17 Dauh Puri.</li>
                         </ul>
                     </div>
-                </div>
+                </body>
+                </html>
             `;
 
-            window.print();
+            // Membuat iFrame transparan untuk mencetak
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(templateCetakHtml);
+            doc.close();
+
+            // Eksekusi print setelah dokumen iFrame terisi penuh
+            iframe.contentWindow.focus();
+            setTimeout(() => {
+                iframe.contentWindow.print();
+                document.body.removeChild(iframe); // Hapus kembali iFrame setelah dialog cetak selesai
+            }, 500);
         }
 
         function downloadRekapExcel() {
